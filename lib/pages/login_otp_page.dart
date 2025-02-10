@@ -49,7 +49,9 @@ class _LoginOtpPageState extends State<LoginOtpPage> {
             children: [
               Row(mainAxisAlignment: MainAxisAlignment.end, children: [
                 IconButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    // TODO("Navigate to home page")
+                  },
                   icon: const Icon(Icons.close, color: Colors.black, size: 30),
                 )
               ]),

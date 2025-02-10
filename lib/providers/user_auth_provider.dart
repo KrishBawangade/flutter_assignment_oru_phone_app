@@ -9,13 +9,15 @@ class UserAuthProvider with ChangeNotifier {
   String? _errorMessage;
 
   int? _countryCode;
-  int? _mobileNumber; // ✅ Store phone details
+  int? _mobileNumber;
+  String? _userName; // ✅ Store user name
 
   String? get csrfToken => _csrfToken;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
-  int? get countryCode => _countryCode; // ✅ Getter for country code
-  int? get mobileNumber => _mobileNumber; // ✅ Getter for mobile number
+  int? get countryCode => _countryCode;
+  int? get mobileNumber => _mobileNumber;
+  String? get userName => _userName; // ✅ Getter for user name
 
   /// **🔹 Helper Method to Set Loading State**
   void _setLoading(bool value) {
@@ -27,6 +29,12 @@ class UserAuthProvider with ChangeNotifier {
   void _handleError(dynamic e) {
     _errorMessage = e.toString().replaceFirst("Exception: ", "");
     notifyListeners();
+  }
+
+  /// **✏️ Set User Name**
+  void setUserName(String name) {
+    _userName = name;
+    notifyListeners(); // ✅ Notify UI to update
   }
 
   /// **📩 Request OTP (Generate OTP)**
@@ -41,9 +49,9 @@ class UserAuthProvider with ChangeNotifier {
       _countryCode = countryCode;
       _mobileNumber = mobileNumber;
 
-      notifyListeners(); // Notify UI about the updated values
+      notifyListeners();
 
-      return response['success'] ?? true; // ✅ Return success flag
+      return response['success'] ?? true;
     } catch (e) {
       _handleError(e);
       return false;
@@ -62,7 +70,8 @@ class UserAuthProvider with ChangeNotifier {
 
       if (_csrfToken != null) {
         final userDetails = await _apiService.isLoggedIn(_csrfToken!);
-        _csrfToken = userDetails['csrfToken']; // Update token if needed
+        _csrfToken = userDetails['csrfToken'];
+        _userName = userDetails['userName']; // ✅ Fetch & store user name
         await TokenCache.saveCsrfToken(_csrfToken!);
       }
     } catch (e) {
@@ -86,7 +95,30 @@ class UserAuthProvider with ChangeNotifier {
 
     try {
       await _apiService.validateOtp(_countryCode!, _mobileNumber!, otp);
-      await checkLoginStatus(); // ✅ Fetch and cache CSRF token
+      await checkLoginStatus(); // ✅ Fetch and cache CSRF token & user data
+      return true;
+    } catch (e) {
+      _handleError(e);
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  /// **✏️ Update User Name**
+  Future<bool> updateUserName(String newUserName) async {
+    if (_csrfToken == null) {
+      _handleError("User is not logged in.");
+      return false;
+    }
+
+    _setLoading(true);
+    _errorMessage = null;
+
+    try {
+      await _apiService.updateUser(_countryCode!, newUserName, _csrfToken!);
+      _userName = newUserName; // ✅ Update locally
+      notifyListeners();
       return true;
     } catch (e) {
       _handleError(e);
@@ -105,7 +137,8 @@ class UserAuthProvider with ChangeNotifier {
       await _apiService.logout(_csrfToken!);
       _csrfToken = null;
       _countryCode = null;
-      _mobileNumber = null; // ✅ Clear stored values
+      _mobileNumber = null;
+      _userName = null; // ✅ Clear user data
       await TokenCache.deleteCsrfToken();
     } catch (e) {
       _handleError(e);

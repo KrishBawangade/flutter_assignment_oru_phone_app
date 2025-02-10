@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_assignment_oru_phone_app/pages/confirm_name_page.dart';
 import 'package:flutter_assignment_oru_phone_app/providers/user_auth_provider.dart';
 import 'package:flutter_assignment_oru_phone_app/utils/colors.dart';
 import 'package:flutter_assignment_oru_phone_app/utils/constants.dart';
@@ -272,8 +273,13 @@ class VerifyOtpPageState extends State<VerifyOtpPage> {
                                       setState(() {
                                         _otpController.text = "";
                                       });
-                                    }else{
-
+                                    } else {
+                                      if (context.mounted) {
+                                        Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                                builder: (_) =>
+                                                    ConfirmNamePage()));
+                                      }
                                     }
                                   }
                                 : null,
