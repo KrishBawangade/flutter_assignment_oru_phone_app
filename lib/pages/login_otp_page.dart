@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_assignment_oru_phone_app/utils/colors.dart';
-import 'package:flutter_assignment_oru_phone_app/utils/constants.dart';
+import 'package:flutter_assignment_oru_phone_app/pages/verify_otp_page.dart';
+import 'package:flutter_assignment_oru_phone_app/providers/user_auth_provider.dart';
+import 'package:flutter_assignment_oru_phone_app/utils/functions.dart';
+import 'package:provider/provider.dart';
+import '../utils/colors.dart';
+import '../utils/constants.dart';
 
 class LoginOtpPage extends StatefulWidget {
   const LoginOtpPage({super.key});
@@ -34,6 +38,7 @@ class _LoginOtpPageState extends State<LoginOtpPage> {
 
   @override
   Widget build(BuildContext context) {
+    UserAuthProvider authProvider = Provider.of(context);
     return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: Colors.white,
@@ -79,7 +84,6 @@ class _LoginOtpPageState extends State<LoginOtpPage> {
                       style: TextStyle(fontWeight: FontWeight.w400)),
                   TextSelectionTheme(
                     data: TextSelectionThemeData(
-                      
                       cursorColor: AppColors.colorPrimary,
                       selectionColor: AppColors.colorPrimary.withAlpha(80),
                       selectionHandleColor: AppColors.colorPrimary,
@@ -88,8 +92,11 @@ class _LoginOtpPageState extends State<LoginOtpPage> {
                       controller: _mobNoTextController,
                       keyboardType: TextInputType.phone,
                       maxLength: 10, // Limit input to 10 digits
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly], // Restrict to numbers
-                      onChanged: _validateMobileNumber, // Call validation function
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly
+                      ], // Restrict to numbers
+                      onChanged:
+                          _validateMobileNumber, // Call validation function
                       decoration: InputDecoration(
                         focusedBorder: OutlineInputBorder(
                           borderSide: BorderSide(
@@ -113,7 +120,6 @@ class _LoginOtpPageState extends State<LoginOtpPage> {
                             ],
                           ),
                         ),
-                        
                       ),
                     ),
                   ),
@@ -142,7 +148,8 @@ class _LoginOtpPageState extends State<LoginOtpPage> {
                   ),
                 ),
                 const SizedBox(width: 16),
-                const Text("Accept", style: TextStyle(fontWeight: FontWeight.w700)),
+                const Text("Accept",
+                    style: TextStyle(fontWeight: FontWeight.w700)),
                 const SizedBox(width: 4),
                 Text("Terms and Conditions",
                     style: TextStyle(
@@ -150,36 +157,62 @@ class _LoginOtpPageState extends State<LoginOtpPage> {
                         color: AppColors.colorPrimary,
                         fontWeight: FontWeight.w600)),
               ]),
-              const SizedBox(height: 8),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  disabledForegroundColor: Colors.white,
-                  disabledBackgroundColor:
-                      Theme.of(context).hintColor.withAlpha(100),
-                  backgroundColor: _isFormValid()
-                      ? AppColors.colorPrimary
-                      : Theme.of(context).hintColor.withAlpha(100), // Disabled state color
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4)),
-                ),
-                onPressed: _isFormValid() ? () {
-                  // TODO: Handle OTP submission
-                  debugPrint("Proceeding with OTP");
-                } : null, // Disable button if form is invalid
-                child: const Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Row(
+              const SizedBox(height: 16),
+              authProvider.isLoading
+                  ? Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text("Next",
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 18)),
-                        SizedBox(width: 8),
-                        Icon(Icons.arrow_forward, color: Colors.white, size: 24)
-                      ]),
-                ),
-              )
+                        CircularProgressIndicator(
+                            color: AppColors.colorPrimary),
+                      ],
+                    )
+                  : ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        disabledForegroundColor: Colors.white,
+                        disabledBackgroundColor:
+                            Theme.of(context).hintColor.withAlpha(100),
+                        backgroundColor: _isFormValid()
+                            ? AppColors.colorPrimary
+                            : Theme.of(context)
+                                .hintColor
+                                .withAlpha(100), // Disabled state color
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(4)),
+                      ),
+                      onPressed: _isFormValid()
+                          ? () async {
+                              bool success = await authProvider.requestOtp(
+                                  91, int.parse(_mobNoTextController.text));
+                              if (!success) {
+                                AppFunctions.showSimpleToastMessage(
+                                    msg: authProvider.errorMessage!);
+                              } else {
+                                AppFunctions.showSimpleToastMessage(
+                                    msg: "Otp Sent Successfully");
+                                if (context.mounted) {
+                                  Navigator.of(context).push(MaterialPageRoute(
+                                      builder: (_) => VerifyOtpPage()));
+                                }
+                              }
+                            }
+                          : null, // Disable button if form is invalid
+                      child: Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text("Next",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 18)),
+                              SizedBox(width: 8),
+                              Icon(Icons.arrow_forward,
+                                  color: Colors.white, size: 24)
+                            ]),
+                      ),
+                    )
             ],
           ),
         ),

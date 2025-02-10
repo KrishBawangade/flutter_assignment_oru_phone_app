@@ -6,11 +6,16 @@ class UserAuthProvider with ChangeNotifier {
   final ApiService _apiService = ApiService();
   String? _csrfToken;
   bool _isLoading = false;
-  String? _errorMessage; // ✅ Store error message
+  String? _errorMessage;
+
+  int? _countryCode;
+  int? _mobileNumber; // ✅ Store phone details
 
   String? get csrfToken => _csrfToken;
   bool get isLoading => _isLoading;
-  String? get errorMessage => _errorMessage; // ✅ Expose error message
+  String? get errorMessage => _errorMessage;
+  int? get countryCode => _countryCode; // ✅ Getter for country code
+  int? get mobileNumber => _mobileNumber; // ✅ Getter for mobile number
 
   /// **🔹 Helper Method to Set Loading State**
   void _setLoading(bool value) {
@@ -31,10 +36,17 @@ class UserAuthProvider with ChangeNotifier {
 
     try {
       final response = await _apiService.createOtp(countryCode, mobileNumber);
+      
+      // ✅ Store country code and phone number
+      _countryCode = countryCode;
+      _mobileNumber = mobileNumber;
+
+      notifyListeners(); // Notify UI about the updated values
+
       return response['success'] ?? true; // ✅ Return success flag
     } catch (e) {
       _handleError(e);
-      return false; // ❌ Return failure
+      return false;
     } finally {
       _setLoading(false);
     }
@@ -43,7 +55,7 @@ class UserAuthProvider with ChangeNotifier {
   /// **🔐 Check If User Is Logged In & Fetch CSRF Token**
   Future<void> checkLoginStatus() async {
     _setLoading(true);
-    _errorMessage = null; // ✅ Reset error message
+    _errorMessage = null;
 
     try {
       _csrfToken = await TokenCache.getCsrfToken();
@@ -62,18 +74,23 @@ class UserAuthProvider with ChangeNotifier {
     }
   }
 
-  /// **📲 Login with OTP**
-  Future<bool> login(int countryCode, int mobileNumber, int otp) async {
+  /// **📲 Login with OTP (Uses Stored Phone Details)**
+  Future<bool> login(int otp) async {
     _setLoading(true);
     _errorMessage = null;
 
+    if (_countryCode == null || _mobileNumber == null) {
+      _handleError("Country code or mobile number is missing.");
+      return false;
+    }
+
     try {
-      await _apiService.validateOtp(countryCode, mobileNumber, otp);
+      await _apiService.validateOtp(_countryCode!, _mobileNumber!, otp);
       await checkLoginStatus(); // ✅ Fetch and cache CSRF token
-      return true; // ✅ Login success
+      return true;
     } catch (e) {
       _handleError(e);
-      return false; // ❌ Login failed
+      return false;
     } finally {
       _setLoading(false);
     }
@@ -87,6 +104,8 @@ class UserAuthProvider with ChangeNotifier {
     try {
       await _apiService.logout(_csrfToken!);
       _csrfToken = null;
+      _countryCode = null;
+      _mobileNumber = null; // ✅ Clear stored values
       await TokenCache.deleteCsrfToken();
     } catch (e) {
       _handleError(e);
