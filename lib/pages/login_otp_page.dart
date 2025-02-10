@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_assignment_oru_phone_app/providers/user_auth_provider.dart';
-import 'package:flutter_assignment_oru_phone_app/utils/functions.dart';
-import 'package:provider/provider.dart';
-import '../utils/colors.dart';
-import '../utils/constants.dart';
+import 'package:flutter_assignment_oru_phone_app/utils/colors.dart';
+import 'package:flutter_assignment_oru_phone_app/utils/constants.dart';
 
 class LoginOtpPage extends StatefulWidget {
   const LoginOtpPage({super.key});
@@ -37,7 +34,6 @@ class _LoginOtpPageState extends State<LoginOtpPage> {
 
   @override
   Widget build(BuildContext context) {
-    UserAuthProvider authProvider = Provider.of(context);
     return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: Colors.white,
@@ -155,12 +151,7 @@ class _LoginOtpPageState extends State<LoginOtpPage> {
                         fontWeight: FontWeight.w600)),
               ]),
               const SizedBox(height: 8),
-              authProvider.isLoading? Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(color: AppColors.colorPrimary),
-                ],
-              ): ElevatedButton(
+              ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.white,
                   disabledForegroundColor: Colors.white,
@@ -172,19 +163,14 @@ class _LoginOtpPageState extends State<LoginOtpPage> {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(4)),
                 ),
-                onPressed: _isFormValid() ? () async{
-                  bool success = await authProvider.requestOtp(91, int.parse(_mobNoTextController.text));
-                  if(!success){
-                    AppFunctions.showSimpleToastMessage(msg: authProvider.errorMessage!);
-                  }else{
-                    AppFunctions.showSimpleToastMessage(msg: "Otp Sent Successfully");
-                  }
+                onPressed: _isFormValid() ? () {
+                  // TODO: Handle OTP submission
+                  debugPrint("Proceeding with OTP");
                 } : null, // Disable button if form is invalid
-                child: Padding(
+                child: const Padding(
                   padding: EdgeInsets.all(16.0),
                   child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text("Next",
                             style: TextStyle(
