@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_assignment_oru_phone_app/models/user_model.dart';
+import 'package:flutter_assignment_oru_phone_app/utils/user_cache.dart';
 import '../services/api_service.dart';
 import '../utils/token_cache.dart';
 
@@ -10,14 +12,18 @@ class UserAuthProvider with ChangeNotifier {
 
   int? _countryCode;
   int? _mobileNumber;
-  String? _userName; // ✅ Store user name
+  String? _userName; 
+  UserModel? _userData;
+  String? _cookie;
 
   String? get csrfToken => _csrfToken;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   int? get countryCode => _countryCode;
   int? get mobileNumber => _mobileNumber;
-  String? get userName => _userName; // ✅ Getter for user name
+  String? get userName => _userName; 
+  UserModel? get userData => _userData; 
+  String? get cookie => _cookie; 
 
   /// **🔹 Helper Method to Set Loading State**
   void _setLoading(bool value) {
@@ -61,22 +67,21 @@ class UserAuthProvider with ChangeNotifier {
   }
 
   /// **🔐 Check If User Is Logged In & Fetch CSRF Token**
-  Future<void> checkLoginStatus() async {
+  Future<void> checkLoginStatus(String cookie) async {
     _setLoading(true);
     _errorMessage = null;
 
     try {
-      _csrfToken = await TokenCache.getCsrfToken();
-
-      if (_csrfToken != null) {
-        final userDetails = await _apiService.isLoggedIn(_csrfToken!);
-        _csrfToken = userDetails['csrfToken'];
-        _userName = userDetails['userName']; // ✅ Fetch & store user name
-        await TokenCache.saveCsrfToken(_csrfToken!);
-      }
+      final userDetails = await _apiService.isLoggedIn(cookie);
+      debugPrint("loggedIn details: $userDetails");
+      _csrfToken = userDetails['csrfToken'];
+      _userData = UserModel.fromJson(userDetails['user']); // ✅ Fetch & store user data
+      debugPrint(" user data: ${userDetails['user']}");
+      await TokenCache.saveCsrfToken(_csrfToken!);
+      await UserCache.saveUserModel(_userData!);
     } catch (e) {
       _csrfToken = null;
-      await TokenCache.deleteCsrfToken();
+      _cookie = null;
       _handleError(e);
     } finally {
       _setLoading(false);
@@ -94,8 +99,11 @@ class UserAuthProvider with ChangeNotifier {
     }
 
     try {
-      await _apiService.validateOtp(_countryCode!, _mobileNumber!, otp);
-      await checkLoginStatus(); // ✅ Fetch and cache CSRF token & user data
+      Map<String, dynamic> responseJson = await _apiService.validateOtp(_countryCode!, _mobileNumber!, otp);
+      debugPrint("Session: $responseJson");
+      String cookie = responseJson['session'];
+      await TokenCache.saveAuthCookie(cookie);
+      await checkLoginStatus(cookie); 
       return true;
     } catch (e) {
       _handleError(e);
@@ -138,7 +146,8 @@ class UserAuthProvider with ChangeNotifier {
       _csrfToken = null;
       _countryCode = null;
       _mobileNumber = null;
-      _userName = null; // ✅ Clear user data
+      _userName = null;
+      _userData= null; // ✅ Clear user data
       await TokenCache.deleteCsrfToken();
     } catch (e) {
       _handleError(e);
@@ -146,4 +155,5 @@ class UserAuthProvider with ChangeNotifier {
       _setLoading(false);
     }
   }
+  
 }

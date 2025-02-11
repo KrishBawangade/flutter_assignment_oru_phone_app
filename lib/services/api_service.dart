@@ -5,18 +5,40 @@ class ApiService {
   static const String baseUrl = "http://40.90.224.241:5000";
 
   /// **🔹 Helper Function to Handle Errors & Extract Server Messages**
-  Map<String, dynamic> _handleResponse(http.Response response) {
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      // Return error message from the server if available
-      final errorResponse = jsonDecode(response.body);
-      throw Exception(errorResponse['error'] ?? 'Unknown error occurred');
+  Map<String, dynamic> _handleResponse(http.Response response,
+      {bool returnCookie = false}) {
+    try {
+      final decodedResponse = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        if (returnCookie) {
+          // Extract session cookie from headers
+          String? sessionCookie;
+          if (response.headers.containsKey('set-cookie')) {
+            String cookies = response.headers['set-cookie']!;
+            List<String> cookieParts = cookies.split(';');
+            for (var part in cookieParts) {
+              if (part.trim().startsWith('session=')) {
+                sessionCookie =
+                    part.split('=')[1]; // Extract the session cookie value
+                break;
+              }
+            }
+          }
+          // Add the session cookie to the response map
+          decodedResponse['session'] = sessionCookie ?? "";
+        }
+        return decodedResponse;
+      } else {
+        throw Exception(decodedResponse['error'] ?? 'Unknown error occurred');
+      }
+    } catch (e) {
+      throw Exception('Failed to parse response: $e');
     }
   }
 
   /// **📲 Create OTP**
-  Future<Map<String, dynamic>> createOtp(int countryCode, int mobileNumber) async {
+  Future<Map<String, dynamic>> createOtp(
+      int countryCode, int mobileNumber) async {
     final url = Uri.parse('$baseUrl/login/otpCreate');
     final response = await http.post(
       url,
@@ -30,7 +52,8 @@ class ApiService {
   }
 
   /// **✅ Validate OTP**
-  Future<Map<String, dynamic>> validateOtp(int countryCode, int mobileNumber, int otp) async {
+  Future<Map<String, dynamic>> validateOtp(
+      int countryCode, int mobileNumber, int otp) async {
     final url = Uri.parse('$baseUrl/login/otpValidate');
     final response = await http.post(
       url,
@@ -41,37 +64,38 @@ class ApiService {
         'otp': otp,
       }),
     );
-    return _handleResponse(response);
+    return _handleResponse(response, returnCookie: true);
   }
 
   /// **🔐 Check If User Is Logged In**
-  Future<Map<String, dynamic>> isLoggedIn(String csrfToken) async {
+  Future<Map<String, dynamic>> isLoggedIn(String authCookie) async {
     final url = Uri.parse('$baseUrl/isLoggedIn');
     final response = await http.get(
       url,
       headers: {
         'Content-Type': 'application/json',
-        'X-Csrf-Token': csrfToken,
+        'Cookie': authCookie,
       },
     );
     return _handleResponse(response);
   }
 
   /// **🚪 Logout**
-  Future<void> logout(String csrfToken) async {
+  Future<void> logout(String authCookie) async {
     final url = Uri.parse('$baseUrl/logout');
     final response = await http.get(
       url,
       headers: {
         'Content-Type': 'application/json',
-        'X-Csrf-Token': csrfToken,
+        'Cookie': authCookie,
       },
     );
     _handleResponse(response);
   }
 
   /// **👤 Update User Details**
-  Future<void> updateUser(int countryCode, String userName, String csrfToken) async {
+  Future<void> updateUser(
+      int countryCode, String userName, String csrfToken) async {
     final url = Uri.parse('$baseUrl/update');
     final response = await http.post(
       url,
@@ -106,7 +130,8 @@ class ApiService {
   }
 
   /// **❤️ Like/Unlike Product**
-  Future<void> likeProduct(String listingId, bool isFav, String csrfToken) async {
+  Future<void> likeProduct(
+      String listingId, bool isFav, String csrfToken) async {
     final url = Uri.parse('$baseUrl/favs');
     final response = await http.post(
       url,
