@@ -43,15 +43,15 @@ class VerifyOtpPageState extends State<VerifyOtpPage> {
   /// **🔹 Resend OTP Function**
   void _resendOtp(UserAuthProvider authProvider) async {
     _startTimer(); // Restart the timer
-    bool success = await authProvider.requestOtp(
-        authProvider.countryCode!, authProvider.mobileNumber!);
-    if (!success) {
+    authProvider
+        .requestOtp(authProvider.countryCode!, authProvider.mobileNumber!,
+            onError: (errorMsg) {
       AppFunctions.showSimpleToastMessage(
-          msg: authProvider.errorMessage ?? "Failed to resend OTP");
-    } else {
+          msg: errorMsg.isEmpty ? "Failed to resend OTP" : errorMsg);
+    }, onSuccess: () {
       AppFunctions.showSimpleToastMessage(
           msg: authProvider.errorMessage ?? "OTP Resent Successfully");
-    }
+    });
   }
 
   @override
@@ -238,62 +238,62 @@ class VerifyOtpPageState extends State<VerifyOtpPage> {
               ),
               const SizedBox(height: 100),
 
-              /// **🔹 Verify OTP Button**
-              authProvider.isLoading
-                  ? Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const CircularProgressIndicator(
-                            color: AppColors.colorPrimary),
-                      ],
-                    )
-                  : Row(
-                      children: [
-                        Expanded(
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              foregroundColor: Colors.white,
-                              disabledForegroundColor: Colors.white,
-                              disabledBackgroundColor:
-                                  Theme.of(context).hintColor.withAlpha(100),
-                              backgroundColor: _otpController.text.length == 4
-                                  ? AppColors.colorPrimary
-                                  : Theme.of(context).hintColor.withAlpha(100),
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(4)),
-                            ),
-                            onPressed: _otpController.text.length == 4
-                                ? () async {
-                                    FocusScope.of(context).unfocus();
-                                    bool success = await authProvider
-                                        .login(int.parse(_otpController.text));
-                                    if (!success) {
-                                      AppFunctions.showSimpleToastMessage(
-                                          msg: "Please enter correct OTP");
-                                      setState(() {
-                                        _otpController.text = "";
-                                      });
-                                    } else {
-                                      if (context.mounted) {
-                                        Navigator.of(context).push(
+              
+              AnimatedSwitcher(
+                duration: Duration(milliseconds: 300),
+                child: authProvider.isLoading
+                    ? Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const CircularProgressIndicator(
+                              color: AppColors.colorPrimary),
+                        ],
+                      )
+                      /// **🔹 Verify OTP Button**
+                    : Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                disabledForegroundColor: Colors.white,
+                                disabledBackgroundColor:
+                                    Theme.of(context).hintColor.withAlpha(100),
+                                backgroundColor: _otpController.text.length == 4
+                                    ? AppColors.colorPrimary
+                                    : Theme.of(context).hintColor.withAlpha(100),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(4)),
+                              ),
+                              onPressed: _otpController.text.length == 4
+                                  ? () async {
+                                      FocusScope.of(context).unfocus();
+                                      await authProvider
+                                          .login(int.parse(_otpController.text),
+                                              onError: (_) {
+                                        AppFunctions.showSimpleToastMessage(
+                                            msg: "Please enter correct OTP");
+                                      }, onSuccess: () {
+                                        Navigator.of(context).pop();
+                                        Navigator.of(context).pushReplacement(
                                             MaterialPageRoute(
                                                 builder: (_) =>
                                                     ConfirmNamePage()));
-                                      }
+                                      });
                                     }
-                                  }
-                                : null,
-                            child: const Padding(
-                              padding: EdgeInsets.all(16.0),
-                              child: Text("Verify OTP",
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 18)),
+                                  : null,
+                              child: const Padding(
+                                padding: EdgeInsets.all(16.0),
+                                child: Text("Verify OTP",
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 18)),
+                              ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
+                        ],
+                      ),
+              ),
             ],
           ),
         ),

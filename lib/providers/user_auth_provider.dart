@@ -32,128 +32,162 @@ class UserAuthProvider with ChangeNotifier {
   }
 
   /// **🔹 Helper Method to Handle Errors**
-  void _handleError(dynamic e) {
+  void _handleError(dynamic e, Function(String)? onError) {
     _errorMessage = e.toString().replaceFirst("Exception: ", "");
     notifyListeners();
+    if (onError != null) {
+      onError(_errorMessage!);
+    }
   }
 
   /// **✏️ Set User Name**
-  void setUserName(String name) {
+  void setUserName(String name, {Function()? onSuccess, Function(String)? onError}) {
     _userName = name;
-    notifyListeners(); // ✅ Notify UI to update
+    notifyListeners(); 
+    if (onSuccess != null) onSuccess();
   }
 
-  /// **📩 Request OTP (Generate OTP)**
-  Future<bool> requestOtp(int countryCode, int mobileNumber) async {
+  /// **📩 Request OTP**
+  Future<void> requestOtp(
+    int countryCode,
+    int mobileNumber, {
+    Function()? onSuccess,
+    Function(String)? onError,
+  }) async {
     _setLoading(true);
     _errorMessage = null;
 
     try {
-      final response = await _apiService.createOtp(countryCode, mobileNumber);
-      
-      // ✅ Store country code and phone number
+      await _apiService.createOtp(countryCode, mobileNumber);
       _countryCode = countryCode;
       _mobileNumber = mobileNumber;
-
       notifyListeners();
 
-      return response['success'] ?? true;
+      if (onSuccess != null) onSuccess();
     } catch (e) {
-      _handleError(e);
-      return false;
+      _handleError(e, onError);
     } finally {
       _setLoading(false);
     }
   }
 
-  /// **🔐 Check If User Is Logged In & Fetch CSRF Token**
-  Future<void> checkLoginStatus(String cookie) async {
+  /// **🔐 Check If User Is Logged In**
+  Future<void> checkLoginStatus(
+    String cookie, {
+    Function()? onSuccess,
+    Function(String)? onError,
+  }) async {
     _setLoading(true);
     _errorMessage = null;
 
     try {
       final userDetails = await _apiService.isLoggedIn(cookie);
-      debugPrint("loggedIn details: $userDetails");
+      // debugPrint("loggedIn details: $userDetails");
+
       _csrfToken = userDetails['csrfToken'];
-      _userData = UserModel.fromJson(userDetails['user']); // ✅ Fetch & store user data
-      debugPrint(" user data: ${userDetails['user']}");
+      _userData = UserModel.fromJson(userDetails['user']);
+      _cookie = cookie;
+
       await TokenCache.saveCsrfToken(_csrfToken!);
       await UserCache.saveUserModel(_userData!);
+
+      notifyListeners();
+      if (onSuccess != null) onSuccess();
     } catch (e) {
       _csrfToken = null;
       _cookie = null;
-      _handleError(e);
+      _userData = null;
+      notifyListeners();
+      _handleError(e, onError);
     } finally {
       _setLoading(false);
     }
   }
 
-  /// **📲 Login with OTP (Uses Stored Phone Details)**
-  Future<bool> login(int otp) async {
+  /// **📲 Login with OTP**
+  Future<void> login(
+    int otp, {
+    Function()? onSuccess,
+    Function(String)? onError,
+  }) async {
     _setLoading(true);
     _errorMessage = null;
 
     if (_countryCode == null || _mobileNumber == null) {
-      _handleError("Country code or mobile number is missing.");
-      return false;
+      _handleError("Country code or mobile number is missing.", onError);
+      return;
     }
 
     try {
-      Map<String, dynamic> responseJson = await _apiService.validateOtp(_countryCode!, _mobileNumber!, otp);
-      debugPrint("Session: $responseJson");
+      Map<String, dynamic> responseJson =
+          await _apiService.validateOtp(_countryCode!, _mobileNumber!, otp);
       String cookie = responseJson['session'];
+      // debugPrint("Session: $cookie");
+
       await TokenCache.saveAuthCookie(cookie);
-      await checkLoginStatus(cookie); 
-      return true;
+      await checkLoginStatus(cookie, onSuccess: onSuccess, onError: onError);
     } catch (e) {
-      _handleError(e);
-      return false;
+      _handleError(e, onError);
     } finally {
       _setLoading(false);
     }
   }
 
   /// **✏️ Update User Name**
-  Future<bool> updateUserName(String newUserName) async {
+  Future<void> updateUserName(
+    String newUserName, {
+    Function()? onSuccess,
+    Function(String)? onError,
+  }) async {
     if (_csrfToken == null) {
-      _handleError("User is not logged in.");
-      return false;
+      _handleError("User is not logged in.", onError);
+      return;
     }
 
     _setLoading(true);
     _errorMessage = null;
 
     try {
-      await _apiService.updateUser(_countryCode!, newUserName, _csrfToken!);
-      _userName = newUserName; // ✅ Update locally
+      await _apiService.updateUser(_countryCode!, newUserName, _csrfToken!, _cookie!);
+      _userName = newUserName;
       notifyListeners();
-      return true;
+
+      if (onSuccess != null) onSuccess();
     } catch (e) {
-      _handleError(e);
-      return false;
+      _handleError(e, onError);
     } finally {
       _setLoading(false);
     }
   }
 
   /// **🚪 Logout**
-  Future<void> logout() async {
+  Future<void> logout({
+    Function()? onSuccess,
+    Function(String)? onError,
+  }) async {
     _setLoading(true);
     _errorMessage = null;
 
     try {
-      await _apiService.logout(_csrfToken!);
+      await _apiService.logout(_csrfToken!, _cookie!);
+      
       _csrfToken = null;
       _countryCode = null;
       _mobileNumber = null;
       _userName = null;
-      _userData= null; // ✅ Clear user data
+      _userData = null;
+      _cookie = null;
+
       await TokenCache.deleteCsrfToken();
+      await TokenCache.deleteAuthCookie();
+      await UserCache.deleteUserModel();
+
+      notifyListeners();
+      if (onSuccess != null) onSuccess();
     } catch (e) {
-      _handleError(e);
+      _handleError(e, onError);
     } finally {
       _setLoading(false);
     }
   }
-  
 }

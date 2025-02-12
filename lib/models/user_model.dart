@@ -12,11 +12,14 @@ class UserModel {
   final String mobileNumber;
   final bool isAccountExpired;
   final String createdDate;
-  final List<dynamic> favListings;
-  final List<dynamic> userListings;
+  final List<String> favListings; // Assuming it's a list of strings
+  final List<dynamic> userListings; // Keep dynamic if structure is unknown
   final String userType;
-  final bool waOptIn;
-  final String sessionId;
+  
+  @JsonKey(name: "WAOptIn") // Fix the JSON key mapping
+  final bool? waOptIn;
+  
+  final String? sessionId; // Make sessionId optional
 
   UserModel({
     required this.userName,
@@ -31,7 +34,7 @@ class UserModel {
     required this.userListings,
     required this.userType,
     required this.waOptIn,
-    required this.sessionId,
+    this.sessionId, // Optional sessionId
   });
 
   // Factory method to generate UserModel from JSON

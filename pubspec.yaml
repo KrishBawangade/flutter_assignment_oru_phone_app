@@ -19,6 +19,10 @@ dependencies:
   pin_code_fields: ^8.0.1
   json_annotation: ^4.8.1
   shared_preferences: ^2.5.2
+  flutter_sticky_header: ^0.7.0
+  carousel_slider: ^5.0.0
+  cached_network_image: ^3.4.1
+  animate_icons: ^2.0.0
 
 dev_dependencies:
   flutter_test:

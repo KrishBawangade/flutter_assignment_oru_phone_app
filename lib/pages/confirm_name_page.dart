@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_assignment_oru_phone_app/pages/home_page/home_page.dart';
 import 'package:flutter_assignment_oru_phone_app/providers/user_auth_provider.dart';
 import 'package:flutter_assignment_oru_phone_app/utils/colors.dart';
 import 'package:flutter_assignment_oru_phone_app/utils/constants.dart';
@@ -120,54 +121,55 @@ class ConfirmNamePage extends StatelessWidget {
               const SizedBox(height: 100),
 
               /// **🔹 Submit Button**
-              authProvider.isLoading
-                  ? Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const CircularProgressIndicator(color: AppColors.colorPrimary),
-                    ],
-                  )
-                  : ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        disabledForegroundColor: Colors.white,
-                        disabledBackgroundColor: Theme.of(context).hintColor.withAlpha(100),
-                        backgroundColor: _isFormValid()
-                            ? AppColors.colorPrimary
-                            : Theme.of(context).hintColor.withAlpha(100),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                      ),
-                      onPressed: _isFormValid()
-                          ? () async {
-                              
-                              bool success = await authProvider.updateUserName(_nameController.text.trim());
-
-                              if (!success) {
-                                AppFunctions.showSimpleToastMessage(
-                                  msg: authProvider.errorMessage ?? "Failed to update name.",
-                                );
-                              } else {
-                                // TODO("Navigate to home page")
+              AnimatedSwitcher(
+                duration: Duration(milliseconds: 300),
+                child: authProvider.isLoading
+                    ? Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const CircularProgressIndicator(color: AppColors.colorPrimary),
+                      ],
+                    )
+                    : ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          disabledForegroundColor: Colors.white,
+                          disabledBackgroundColor: Theme.of(context).hintColor.withAlpha(100),
+                          backgroundColor: _isFormValid()
+                              ? AppColors.colorPrimary
+                              : Theme.of(context).hintColor.withAlpha(100),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                        ),
+                        onPressed: _isFormValid()
+                            ? () async {
+                                
+                                await authProvider.updateUserName(_nameController.text.trim(), onError: (error){
+                                  AppFunctions.showSimpleToastMessage(
+                                    msg: error.isEmpty ? "Failed to update name." : error,
+                                  );
+                                }, onSuccess: (){
+                                  Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => HomePage()));
+                                }); 
                               }
-                            }
-                          : null, // ✅ Disable button if name is empty
-
-                      child: const Padding(
-                        padding: EdgeInsets.all(16.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text(
-                              "Confirm Name",
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                            ),
-                            SizedBox(width: 8),
-                            Icon(Icons.arrow_forward, color: Colors.white, size: 24),
-                          ],
+                            : null, // ✅ Disable button if name is empty
+                
+                        child: const Padding(
+                          padding: EdgeInsets.all(16.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                "Confirm Name",
+                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                              ),
+                              SizedBox(width: 8),
+                              Icon(Icons.arrow_forward, color: Colors.white, size: 24),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
+              ),
             ],
           ),
         ),

@@ -15,11 +15,13 @@ UserModel _$UserModelFromJson(Map<String, dynamic> json) => UserModel(
       mobileNumber: json['mobileNumber'] as String,
       isAccountExpired: json['isAccountExpired'] as bool,
       createdDate: json['createdDate'] as String,
-      favListings: json['favListings'] as List<dynamic>,
+      favListings: (json['favListings'] as List<dynamic>)
+          .map((e) => e as String)
+          .toList(),
       userListings: json['userListings'] as List<dynamic>,
       userType: json['userType'] as String,
-      waOptIn: json['waOptIn'] as bool,
-      sessionId: json['sessionId'] as String,
+      waOptIn: json['WAOptIn'] as bool?,
+      sessionId: json['sessionId'] as String?,
     );
 
 Map<String, dynamic> _$UserModelToJson(UserModel instance) => <String, dynamic>{
@@ -34,6 +36,6 @@ Map<String, dynamic> _$UserModelToJson(UserModel instance) => <String, dynamic>{
       'favListings': instance.favListings,
       'userListings': instance.userListings,
       'userType': instance.userType,
-      'waOptIn': instance.waOptIn,
+      'WAOptIn': instance.waOptIn,
       'sessionId': instance.sessionId,
     };

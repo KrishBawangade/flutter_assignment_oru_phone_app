@@ -11,5 +11,33 @@ class AppConstants{
   static const privacyPolicySvgPath = "$baseAssetsSvgPath/privacy_policy_svg.svg";
   static const guideSvgPath = "$baseAssetsSvgPath/guide_svg.svg";
   static const returnPolicySvgPath = "$baseAssetsSvgPath/return_policy_svg.svg";
+  static const drawerSvgPath = "$baseAssetsSvgPath/drawer_svg.svg";
+  static const newSvgPath = "$baseAssetsSvgPath/new_svg.svg";
+  static const banner1ImagePath = "$baseAssetsImagePath/banner1_img.png";
+  static const banner2ImagPath = "$baseAssetsImagePath/banner2_img.png";
+  static const banner3ImagePath = "$baseAssetsImagePath/banner3_img.png";
+  static const banner4ImagePath = "$baseAssetsImagePath/banner4_img.png";
+  static const banner5ImagePath = "$baseAssetsImagePath/banner5_img.png";
+  static const mind1ImagePath = "$baseAssetsImagePath/mind1_img.png";
+  static const mind2ImagePath = "$baseAssetsImagePath/mind2_img.png";
+  static const mind3ImagePath = "$baseAssetsImagePath/mind3_img.png";
+  static const mind4ImagePath = "$baseAssetsImagePath/mind4_img.png";
+  static const mind5ImagePath = "$baseAssetsImagePath/mind5_img.png";
+  static const mind6ImagePath = "$baseAssetsImagePath/mind6_img.png";
+  static const mind7ImagePath = "$baseAssetsImagePath/mind7_img.png";
+  static const mind8ImagePath = "$baseAssetsImagePath/mind8_img.png";
+  static const mind9ImagePath = "$baseAssetsImagePath/mind9_img.png";
+  static const mind10ImagePath = "$baseAssetsImagePath/mind10_img.png";
+  static const mind11ImagePath = "$baseAssetsImagePath/mind11_img.png";
+  static const mind12ImagePath = "$baseAssetsImagePath/mind12_img.png";
+  static const mind13ImagePath = "$baseAssetsImagePath/mind13_img.png";
+  static const mind14ImagePath = "$baseAssetsImagePath/mind14_img.png";
+  static const mind15ImagePath = "$baseAssetsImagePath/mind15_img.png";
+  static const mind16ImagePath = "$baseAssetsImagePath/mind16_img.png";
+  static const mind17ImagePath = "$baseAssetsImagePath/mind17_img.png";
+  static const mind18ImagePath = "$baseAssetsImagePath/mind18_img.png";
+  static const mind19ImagePath = "$baseAssetsImagePath/mind19_img.png";
+  static const random1ImagePath = "$baseAssetsImagePath/random1_img.png";
+  static const random2ImagePath = "$baseAssetsImagePath/random2_img.png";
   
 }

@@ -160,61 +160,62 @@ class _LoginOtpPageState extends State<LoginOtpPage> {
                         fontWeight: FontWeight.w600)),
               ]),
               const SizedBox(height: 16),
-              authProvider.isLoading
-                  ? Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        CircularProgressIndicator(
-                            color: AppColors.colorPrimary),
-                      ],
-                    )
-                  : ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        disabledForegroundColor: Colors.white,
-                        disabledBackgroundColor:
-                            Theme.of(context).hintColor.withAlpha(100),
-                        backgroundColor: _isFormValid()
-                            ? AppColors.colorPrimary
-                            : Theme.of(context)
-                                .hintColor
-                                .withAlpha(100), // Disabled state color
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(4)),
-                      ),
-                      onPressed: _isFormValid()
-                          ? () async {
-                              bool success = await authProvider.requestOtp(
-                                  91, int.parse(_mobNoTextController.text));
-                              if (!success) {
-                                AppFunctions.showSimpleToastMessage(
-                                    msg: authProvider.errorMessage!);
-                              } else {
-                                AppFunctions.showSimpleToastMessage(
-                                    msg: "Otp Sent Successfully");
-                                if (context.mounted) {
+              AnimatedSwitcher(
+                duration: Duration(milliseconds: 300),
+                child: authProvider.isLoading
+                    ? Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CircularProgressIndicator(
+                              color: AppColors.colorPrimary),
+                        ],
+                      )
+                    : ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          disabledForegroundColor: Colors.white,
+                          disabledBackgroundColor:
+                              Theme.of(context).hintColor.withAlpha(100),
+                          backgroundColor: _isFormValid()
+                              ? AppColors.colorPrimary
+                              : Theme.of(context)
+                                  .hintColor
+                                  .withAlpha(100), // Disabled state color
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(4)),
+                        ),
+                        onPressed: _isFormValid()
+                            ? () async {
+                                await authProvider.requestOtp(
+                                    91, int.parse(_mobNoTextController.text),
+                                    onError: (errorMsg) {
+                                  AppFunctions.showSimpleToastMessage(
+                                      msg: errorMsg);
+                                }, onSuccess: () {
+                                  AppFunctions.showSimpleToastMessage(
+                                      msg: "Otp Sent Successfully");
                                   Navigator.of(context).push(MaterialPageRoute(
                                       builder: (_) => VerifyOtpPage()));
-                                }
+                                });
                               }
-                            }
-                          : null, // Disable button if form is invalid
-                      child: Padding(
-                        padding: EdgeInsets.all(16.0),
-                        child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text("Next",
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 18)),
-                              SizedBox(width: 8),
-                              Icon(Icons.arrow_forward,
-                                  color: Colors.white, size: 24)
-                            ]),
+                            : null, // Disable button if form is invalid
+                        child: Padding(
+                          padding: EdgeInsets.all(16.0),
+                          child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text("Next",
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 18)),
+                                SizedBox(width: 8),
+                                Icon(Icons.arrow_forward,
+                                    color: Colors.white, size: 24)
+                              ]),
+                        ),
                       ),
-                    )
+              )
             ],
           ),
         ),

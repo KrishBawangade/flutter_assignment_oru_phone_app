@@ -18,8 +18,7 @@ class ApiService {
             List<String> cookieParts = cookies.split(';');
             for (var part in cookieParts) {
               if (part.trim().startsWith('session=')) {
-                sessionCookie =
-                    part.split('=')[1]; // Extract the session cookie value
+                sessionCookie = part; // Extract the session cookie value
                 break;
               }
             }
@@ -51,7 +50,7 @@ class ApiService {
     return _handleResponse(response);
   }
 
-  /// **✅ Validate OTP**
+  /// **✅ Validate OTP (Extracts CSRF & Session Cookie)**
   Future<Map<String, dynamic>> validateOtp(
       int countryCode, int mobileNumber, int otp) async {
     final url = Uri.parse('$baseUrl/login/otpValidate');
@@ -74,34 +73,36 @@ class ApiService {
       url,
       headers: {
         'Content-Type': 'application/json',
-        'Cookie': authCookie,
+        'Cookie': authCookie, // ✅ Send session cookie
       },
     );
     return _handleResponse(response);
   }
 
   /// **🚪 Logout**
-  Future<void> logout(String authCookie) async {
+  Future<void> logout(String csrfToken, String authCookie) async {
     final url = Uri.parse('$baseUrl/logout');
     final response = await http.get(
       url,
       headers: {
         'Content-Type': 'application/json',
-        'Cookie': authCookie,
+        'X-Csrf-Token': csrfToken,
+        'Cookie': authCookie, // ✅ Ensure session is cleared
       },
     );
     _handleResponse(response);
   }
 
-  /// **👤 Update User Details**
-  Future<void> updateUser(
-      int countryCode, String userName, String csrfToken) async {
+  /// **👤 Update User Details (Now Uses Both CSRF & Cookie)**
+  Future<void> updateUser(int countryCode, String userName, String csrfToken,
+      String authCookie) async {
     final url = Uri.parse('$baseUrl/update');
     final response = await http.post(
       url,
       headers: {
         'Content-Type': 'application/json',
-        'X-Csrf-Token': csrfToken,
+        'X-Csrf-Token': csrfToken, // ✅ CSRF Protection
+        'Cookie': authCookie, // ✅ Include session cookie
       },
       body: jsonEncode({
         'countryCode': countryCode,
@@ -112,32 +113,35 @@ class ApiService {
   }
 
   /// **❓ Fetch FAQs**
-  Future<List<dynamic>> fetchFaqs() async {
+  Future<Map<String, dynamic>> fetchFaqs() async {
     final url = Uri.parse('$baseUrl/faq');
-    final response = await http.get(url);
-    return _handleResponse(response)['faqs'] ?? [];
+    final response = await http.get(
+      url,
+    );
+    return _handleResponse(response);
   }
 
-  /// **🛒 Fetch Products with Filters**
-  Future<List<dynamic>> fetchProducts(Map<String, dynamic> filters) async {
+  /// **🛒 Fetch Products with Filters **
+  Future<Map<String, dynamic>> fetchProducts(Map<String, dynamic> filters) async {
     final url = Uri.parse('$baseUrl/filter');
     final response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'filter': filters}),
+      body: jsonEncode({'filter': filters.isEmpty?{}:filters}),
     );
-    return _handleResponse(response)['products'] ?? [];
+    return _handleResponse(response);
   }
 
-  /// **❤️ Like/Unlike Product**
+  /// **❤️ Like/Unlike Product (Now Uses CSRF & Cookie)**
   Future<void> likeProduct(
-      String listingId, bool isFav, String csrfToken) async {
+      String listingId, bool isFav, String csrfToken, String authCookie) async {
     final url = Uri.parse('$baseUrl/favs');
     final response = await http.post(
       url,
       headers: {
         'Content-Type': 'application/json',
-        'X-Csrf-Token': csrfToken,
+        'X-Csrf-Token': csrfToken, // ✅ Required for security
+        'Cookie': authCookie, // ✅ Session cookie needed
       },
       body: jsonEncode({
         'listingId': listingId,
@@ -148,16 +152,20 @@ class ApiService {
   }
 
   /// **🏢 Fetch Brands with Images**
-  Future<List<dynamic>> fetchBrands() async {
+  Future<Map<String, dynamic>> fetchBrands() async {
     final url = Uri.parse('$baseUrl/makeWithImages');
-    final response = await http.get(url);
-    return _handleResponse(response)['brands'] ?? [];
+    final response = await http.get(
+      url,
+    );
+    return _handleResponse(response);
   }
 
-  /// **🔍 Fetch Search Filters**
+  /// **🔍 Fetch Search Filters **
   Future<Map<String, dynamic>> fetchFilters() async {
     final url = Uri.parse('$baseUrl/showSearchFilters');
-    final response = await http.get(url);
+    final response = await http.get(
+      url,
+    );
     return _handleResponse(response);
   }
 }
