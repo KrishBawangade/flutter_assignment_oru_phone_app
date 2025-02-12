@@ -149,6 +149,7 @@ class UserAuthProvider with ChangeNotifier {
 
     try {
       await _apiService.updateUser(_countryCode!, newUserName, _csrfToken!, _cookie!);
+      await checkLoginStatus(_cookie!);
       _userName = newUserName;
       notifyListeners();
 
@@ -189,5 +190,10 @@ class UserAuthProvider with ChangeNotifier {
     } finally {
       _setLoading(false);
     }
+  }
+
+  void setUserData({required UserModel userData}){
+    _userData = userData;
+    notifyListeners();
   }
 }

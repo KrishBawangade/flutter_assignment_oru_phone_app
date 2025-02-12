@@ -2,9 +2,11 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_assignment_oru_phone_app/models/product_model.dart';
 import 'package:flutter_assignment_oru_phone_app/models/user_model.dart';
+import 'package:flutter_assignment_oru_phone_app/pages/splash_screen.dart';
 import 'package:flutter_assignment_oru_phone_app/providers/general_api_provider.dart';
 import 'package:flutter_assignment_oru_phone_app/providers/user_auth_provider.dart';
 import 'package:flutter_assignment_oru_phone_app/utils/constants.dart';
+import 'package:flutter_assignment_oru_phone_app/widgets/login_bottom_sheet.dart';
 import 'package:provider/provider.dart';
 
 class ProductSingleItem extends StatelessWidget {
@@ -101,7 +103,9 @@ class ProductSingleItem extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     IconButton(onPressed: () async{
-                      generalProvider.likeProduct(product.listingId!, !isFavorite);
+                      generalProvider.likeProduct(product.listingId!, !isFavorite, onError: (errorMsg){
+                        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => SplashScreen()));
+                      });
                     }, icon: Icon(isFavorite? Icons.favorite: Icons.favorite_outline, color: isFavorite?Colors.red: Colors.white)),
                   ],
                 ),

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_assignment_oru_phone_app/pages/confirm_name_page.dart';
+import 'package:flutter_assignment_oru_phone_app/pages/home_page/home_page.dart';
 import 'package:flutter_assignment_oru_phone_app/providers/user_auth_provider.dart';
 import 'package:flutter_assignment_oru_phone_app/utils/colors.dart';
 import 'package:flutter_assignment_oru_phone_app/utils/constants.dart';
@@ -70,6 +71,7 @@ class VerifyOtpPageState extends State<VerifyOtpPage> {
   Widget build(BuildContext context) {
     UserAuthProvider authProvider = Provider.of(context);
 
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: Colors.white,
@@ -90,7 +92,10 @@ class VerifyOtpPageState extends State<VerifyOtpPage> {
                         color: Colors.black, size: 30),
                   ),
                   IconButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => HomePage()));
+                    },
                     icon:
                         const Icon(Icons.close, color: Colors.black, size: 30),
                   )

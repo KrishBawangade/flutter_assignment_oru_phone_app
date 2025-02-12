@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 class ApiService {
@@ -26,6 +27,7 @@ class ApiService {
           // Add the session cookie to the response map
           decodedResponse['session'] = sessionCookie ?? "";
         }
+        debugPrint("decoded Response: $decodedResponse");
         return decodedResponse;
       } else {
         throw Exception(decodedResponse['error'] ?? 'Unknown error occurred');

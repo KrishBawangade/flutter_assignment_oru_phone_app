@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_assignment_oru_phone_app/pages/home_page/home_page.dart';
 import 'package:flutter_assignment_oru_phone_app/pages/verify_otp_page.dart';
 import 'package:flutter_assignment_oru_phone_app/providers/user_auth_provider.dart';
 import 'package:flutter_assignment_oru_phone_app/utils/functions.dart';
@@ -50,7 +51,7 @@ class _LoginOtpPageState extends State<LoginOtpPage> {
               Row(mainAxisAlignment: MainAxisAlignment.end, children: [
                 IconButton(
                   onPressed: () {
-                    // TODO("Navigate to home page")
+                    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => HomePage()));
                   },
                   icon: const Icon(Icons.close, color: Colors.black, size: 30),
                 )

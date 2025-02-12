@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_assignment_oru_phone_app/models/brand_model.dart';
 import 'package:flutter_assignment_oru_phone_app/models/faq_model.dart';
 import 'package:flutter_assignment_oru_phone_app/models/filter_model.dart';
+import 'package:flutter_assignment_oru_phone_app/models/user_model.dart';
 import '../services/api_service.dart';
 import '../providers/user_auth_provider.dart';
 
@@ -105,12 +106,21 @@ class GeneralApiProvider with ChangeNotifier {
       String? authCookie = _userAuthProvider.cookie;
 
       if (csrfToken == null || authCookie == null) {
+        
         throw Exception("User is not authenticated");
       }
 
+      UserModel userData = _userAuthProvider.userData!;
+      if(isFav){
+        userData.favListings.add(listingId);
+      }else{
+        userData.favListings.remove(listingId);
+      }
+      _userAuthProvider.setUserData(userData: userData);
       await _apiService.likeProduct(listingId, isFav, csrfToken, authCookie);
       if (onSuccess != null) onSuccess();
     } catch (e) {
+      // debugPrint("Error occurred: $e");
       _handleError(e, onError: onError);
     } finally {
       _setLoading(false);

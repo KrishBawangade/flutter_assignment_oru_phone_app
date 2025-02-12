@@ -1,9 +1,10 @@
-import 'dart:ui'; 
+import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_assignment_oru_phone_app/models/product_model.dart';
 import 'package:flutter_assignment_oru_phone_app/pages/home_page/widgets/product_single_item.dart';
+import 'package:flutter_assignment_oru_phone_app/pages/login_otp_page.dart';
 import 'package:flutter_assignment_oru_phone_app/providers/filter_sort_provider.dart';
 import 'package:flutter_assignment_oru_phone_app/providers/general_api_provider.dart';
 import 'package:flutter_assignment_oru_phone_app/providers/user_auth_provider.dart';
@@ -164,7 +165,11 @@ class _HomePageState extends State<HomePage> {
                   padding: const EdgeInsets.only(left: 8.0, right: 16),
                   child: authProvider.csrfToken == null
                       ? ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            Navigator.of(context).pushReplacement(
+                                MaterialPageRoute(
+                                    builder: (_) => LoginOtpPage()));
+                          },
                           style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.colorSecondary,
                               shape: RoundedRectangleBorder(
@@ -571,7 +576,6 @@ class _HomePageState extends State<HomePage> {
                             shrinkWrap: true,
                             physics: NeverScrollableScrollPhysics(),
                             children: generalProvider.faqs.map((faq) {
-                            
                               return ExpansionTileTheme(
                                 data: ExpansionTileThemeData(
                                     shape: RoundedRectangleBorder(

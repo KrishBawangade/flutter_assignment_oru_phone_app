@@ -35,7 +35,7 @@ class ConfirmNamePage extends StatelessWidget {
                 children: [
                   IconButton(
                     onPressed: () {
-                      // TODO("Navigate to home page")
+                      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => HomePage()));
                     },
                     icon: const Icon(Icons.close, color: Colors.black, size: 30),
                   )
