@@ -18,7 +18,8 @@ class ActionItemModel {
 }
 
 class MainAppDrawer extends StatelessWidget {
-  const MainAppDrawer({super.key});
+  final Function() onClose;
+  const MainAppDrawer({super.key, required this.onClose});
 
 String convertDateFormat(String dateStr, String inputFormat, String outputFormat) {
   try {
@@ -29,13 +30,6 @@ String convertDateFormat(String dateStr, String inputFormat, String outputFormat
     return 'Invalid date format'; // Handle errors gracefully
   }
 }
-
-void main() {
-  String dateStr = "2025-02-12"; // Example input date
-  String newFormat = convertDateFormat(dateStr, "yyyy-MM-dd", "dd/MM/yyyy"); // Convert format
-  print(newFormat); // Output: 12/02/2025
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -84,7 +78,9 @@ void main() {
                             Image.asset(AppConstants.oruPhoneLogoImagePath,
                                 width: 50, height: 50),
                             IconButton(
-                                onPressed: () {}, icon: Icon(Icons.close, size: 30))
+                                onPressed: () {
+                                  onClose(); // Close drawer
+                                }, icon: Icon(Icons.close, size: 30))
                           ]),
                   ),
                 )
@@ -108,7 +104,9 @@ void main() {
                                       width: 50,
                                       height: 50),
                                   IconButton(
-                                      onPressed: () {},
+                                      onPressed: () {
+                                        onClose(); // Close drawer
+                                      },
                                       icon: Icon(Icons.close, size: 30))
                                 ]),
                           ),

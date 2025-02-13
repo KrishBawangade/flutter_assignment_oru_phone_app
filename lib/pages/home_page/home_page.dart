@@ -40,6 +40,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
   final StickyHeaderController _stickyHeaderController =
       StickyHeaderController();
   final TextEditingController _searchController = TextEditingController();
@@ -140,8 +141,11 @@ class _HomePageState extends State<HomePage> {
 
     return SafeArea(
       child: Scaffold(
+        key: scaffoldKey,
         backgroundColor: Colors.white,
-        drawer: MainAppDrawer(),
+        drawer: MainAppDrawer(onClose: (){
+          scaffoldKey.currentState?.closeDrawer();  
+        },),
         body: CustomScrollView(
           slivers: [
             // SliverAppBar: This is the scrollable AppBar
@@ -184,8 +188,13 @@ class _HomePageState extends State<HomePage> {
               leading: Padding(
                 padding: const EdgeInsets.only(
                     top: 16.0, bottom: 16, right: 8, left: 24),
-                child: SvgPicture.asset(AppConstants.drawerSvgPath,
-                    width: 10, height: 10),
+                child: InkWell(
+                  onTap: (){
+                    scaffoldKey.currentState?.openDrawer(); // Open drawer
+                  },
+                  child: SvgPicture.asset(AppConstants.drawerSvgPath,
+                      width: 10, height: 10),
+                ),
               ),
               flexibleSpace: Stack(
                 children: [
